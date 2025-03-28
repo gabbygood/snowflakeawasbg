@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 
-const SnowflakesCanvas = () => {
+const HeartsCanvas = () => {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -15,36 +15,63 @@ const SnowflakesCanvas = () => {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    const snowflakes = []
-    const maxFlakes = 100
+    const hearts = []
+    const maxHearts = 100
 
-    // Create snowflake particles
-    const createFlake = () => ({
+    // Create heart shape
+    const createHeart = () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      radius: Math.random() * 5 + 1,
+      size: Math.random() * 8 + 4,
       speed: Math.random() * 2 + 0.5,
+      rotation: Math.random() * 360, // Random rotation for hearts
     })
 
-    for (let i = 0; i < maxFlakes; i++) {
-      snowflakes.push(createFlake())
+    for (let i = 0; i < maxHearts; i++) {
+      hearts.push(createHeart())
     }
 
-    // Animate snowflakes
+    // Draw heart shape
+    const drawHeart = (x, y, size, rotation) => {
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate((rotation * Math.PI) / 180)
+      ctx.beginPath()
+
+      const topCurveHeight = size * 0.3
+
+      // Left half of the heart
+      ctx.moveTo(0, 0)
+      ctx.bezierCurveTo(
+        -size / 2,
+        -topCurveHeight,
+        -size,
+        topCurveHeight,
+        0,
+        size
+      )
+      // Right half of the heart
+      ctx.bezierCurveTo(size, topCurveHeight, size / 2, -topCurveHeight, 0, 0)
+
+      ctx.fillStyle = '#ff4d6d' // Heart color
+      ctx.fill()
+      ctx.restore()
+    }
+
+    // Animate hearts falling
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      snowflakes.forEach((flake) => {
-        flake.y += flake.speed
-        if (flake.y > canvas.height) {
-          flake.y = 0
-          flake.x = Math.random() * canvas.width
+      hearts.forEach((heart) => {
+        heart.y += heart.speed
+        heart.rotation += 1
+
+        if (heart.y > canvas.height) {
+          heart.y = 0
+          heart.x = Math.random() * canvas.width
         }
 
-        ctx.beginPath()
-        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2)
-        ctx.fillStyle = '#ffffff'
-        ctx.fill()
+        drawHeart(heart.x, heart.y, heart.size, heart.rotation)
       })
 
       requestAnimationFrame(animate)
@@ -73,4 +100,4 @@ const SnowflakesCanvas = () => {
   )
 }
 
-export default SnowflakesCanvas
+export default HeartsCanvas
