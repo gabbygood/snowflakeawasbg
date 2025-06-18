@@ -1,13 +1,12 @@
 import React, { useRef, useEffect } from 'react'
 
-const HeartsCanvas = () => {
+const LanternCanvas = () => {
   const canvasRef = useRef(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
 
-    // Ensure canvas fills the screen
     const resizeCanvas = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
@@ -15,69 +14,62 @@ const HeartsCanvas = () => {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    const hearts = []
-    const maxHearts = 100
+    const lanterns = []
+    const maxLanterns = 50
 
-    // Create heart shape
-    const createHeart = () => ({
+    const createLantern = () => ({
       x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 8 + 4,
-      speed: Math.random() * 2 + 0.5,
-      rotation: Math.random() * 360, // Random rotation for hearts
+      y: canvas.height + Math.random() * 200,
+      size: Math.random() * 20 + 30,
+      speedY: Math.random() * 1.5 + 2.5,
+      driftX: Math.random() * 0.6 - 0.3,
+      angle: Math.random() * Math.PI * 2,
+      rotation: Math.random() * 360,
+      char: '🏮',
+      glowPhase: Math.random() * Math.PI * 2, // start at different pulse angles
     })
 
-    for (let i = 0; i < maxHearts; i++) {
-      hearts.push(createHeart())
+    for (let i = 0; i < maxLanterns; i++) {
+      lanterns.push(createLantern())
     }
 
-    // Draw heart shape
-    const drawHeart = (x, y, size, rotation) => {
+    const drawLantern = (lantern, time) => {
       ctx.save()
-      ctx.translate(x, y)
-      ctx.rotate((rotation * Math.PI) / 180)
-      ctx.beginPath()
+      ctx.translate(lantern.x, lantern.y)
+      ctx.rotate((lantern.rotation * Math.PI) / 180)
 
-      const topCurveHeight = size * 0.3
+      // Animate glowing halo using sine wave
+      const glow = 15 + Math.sin(time / 500 + lantern.glowPhase) * 10
+      ctx.shadowBlur = glow
+      ctx.shadowColor = 'rgba(255, 150, 50, 0.8)' // orange glow
 
-      // Left half of the heart
-      ctx.moveTo(0, 0)
-      ctx.bezierCurveTo(
-        -size / 2,
-        -topCurveHeight,
-        -size,
-        topCurveHeight,
-        0,
-        size
-      )
-      // Right half of the heart
-      ctx.bezierCurveTo(size, topCurveHeight, size / 2, -topCurveHeight, 0, 0)
+      ctx.font = `${lantern.size}px serif`
+      ctx.fillText(lantern.char, 0, 0)
 
-      ctx.fillStyle = '#ff4d6d' // Heart color
-      ctx.fill()
       ctx.restore()
     }
 
-    // Animate hearts falling
-    const animate = () => {
+    const animate = (time) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      hearts.forEach((heart) => {
-        heart.y += heart.speed
-        heart.rotation += 1
+      lanterns.forEach((lantern) => {
+        lantern.y -= lantern.speedY
+        lantern.x += Math.sin(lantern.angle) * lantern.driftX
+        lantern.angle += 0.01
+        lantern.rotation += 0.2
 
-        if (heart.y > canvas.height) {
-          heart.y = 0
-          heart.x = Math.random() * canvas.width
+        // Reset if it floats too high
+        if (lantern.y < -50) {
+          Object.assign(lantern, createLantern(), { y: canvas.height + 50 })
         }
 
-        drawHeart(heart.x, heart.y, heart.size, heart.rotation)
+        drawLantern(lantern, time)
       })
 
       requestAnimationFrame(animate)
     }
 
-    animate()
+    requestAnimationFrame(animate)
 
     return () => {
       window.removeEventListener('resize', resizeCanvas)
@@ -94,10 +86,10 @@ const HeartsCanvas = () => {
         width: '100%',
         height: '100%',
         zIndex: -1,
-        backgroundColor: '#0d47a1', // Optional: Change the background color
+        backgroundColor: '#0d1b2a', // Deep night sky
       }}
     />
   )
 }
 
-export default HeartsCanvas
+export default LanternCanvas
